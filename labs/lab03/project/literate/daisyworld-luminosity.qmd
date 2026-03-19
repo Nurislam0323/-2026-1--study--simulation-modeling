@@ -1,0 +1,113 @@
+---
+title: "Daisyworld — комплексная динамика"
+---
+
+## Введение
+
+В этом документе мы построим комплексный график изменения числа маргариток, температуры и солнечной светимости в зависимости от модельного времени. Это позволит нам наблюдать за взаимосвязью между биологическими и физическими процессами в модели.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+include(srcdir("daisyworld.jl"))
+using CairoMakie
+```
+
+## Определение функций для сбора данных
+
+Определяем функции-предикаты для разделения маргариток по видам:
+
+```{julia}
+black(a) = a.breed == :black
+white(a) = a.breed == :white
+```
+
+Настраиваем сбор данных о количестве агентов каждого вида:
+
+```{julia}
+adata = [(black, count), (white, count)]
+```
+
+Определяем функцию для вычисления средней температуры по всей поверхности:
+
+```{julia}
+temperature(model) = StatsBase.mean(model.temperature)
+```
+
+Настраиваем сбор данных о модели (температура и солнечная светимость):
+
+```{julia}
+mdata = [temperature, :solar_luminosity]
+```
+
+## Инициализация и запуск модели
+
+Создаём модель с начальной светимостью 1.0 и сценарием `:ramp` (постепенное изменение светимости):
+
+```{julia}
+model = daisyworld(solar_luminosity = 1.0, scenario = :ramp)
+```
+
+Запускаем симуляцию на 1000 шагов со сбором данных об агентах и модели:
+
+```{julia}
+agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
+```
+
+## Построение комплексного графика
+
+Создаём фигуру с тремя подграфиками:
+
+```{julia}
+figure = CairoMakie.Figure(size = (600, 600));
+```
+
+### График 1: Численность маргариток
+
+```{julia}
+ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
+blackl = lines!(ax1, agent_df[!, :time], agent_df[!, :count_black], color = :red)
+whitel = lines!(ax1, agent_df[!, :time], agent_df[!, :count_white], color = :blue)
+figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"])
+```
+
+### График 2: Температура
+
+```{julia}
+ax2 = figure[2, 1] = Axis(figure, ylabel = "temperature")
+lines!(ax2, model_df[!, :time], model_df[!, :temperature], color = :red)
+```
+
+### График 3: Солнечная светимость
+
+```{julia}
+ax3 = figure[3, 1] = Axis(figure, xlabel = "tick", ylabel = "luminosity")
+lines!(ax3, model_df[!, :time], model_df[!, :solar_luminosity], color = :red)
+```
+
+### Настройка отображения
+
+Скрываем подписи по оси X для верхних графиков:
+
+```{julia}
+for ax in (ax1, ax2); ax.xticklabelsvisible = false; end
+```
+
+## Сохранение результата
+
+Сохраняем полученный комплексный график в директорию plots:
+
+```{julia}
+save(plotsdir("daisy_luminosity.png"), figure)
+```
+
+## Заключение
+
+Мы построили комплексный график, показывающий взаимосвязь между численностью маргариток, температурой поверхности и солнечной светимостью. Сценарий `:ramp` демонстрирует, как модель реагирует на постепенное изменение внешних условий.

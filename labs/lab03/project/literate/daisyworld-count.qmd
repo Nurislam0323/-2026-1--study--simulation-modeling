@@ -1,0 +1,79 @@
+---
+title: "Daisyworld — динамика числа маргариток"
+---
+
+## Введение
+
+В этом документе мы построим график изменения числа маргариток в зависимости от модельного времени. Это позволит нам наблюдать за популяционной динамикой чёрных и белых маргариток.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+include(srcdir("daisyworld.jl"))
+using CairoMakie
+```
+
+## Определение функций для подсчёта маргариток
+
+Определяем функции-предикаты для разделения маргариток по видам:
+
+```{julia}
+black(a) = a.breed == :black
+white(a) = a.breed == :white
+```
+
+Настраиваем сбор данных о количестве агентов каждого вида:
+
+```{julia}
+adata = [(black, count), (white, count)]
+```
+
+## Инициализация и запуск модели
+
+Создаём модель с начальной светимостью 1.0 и запускаем симуляцию на 1000 шагов:
+
+```{julia}
+model = daisyworld(; solar_luminosity = 1.0)
+agent_df, model_df = run!(model, 1000; adata)
+```
+
+## Построение графика
+
+Создаём фигуру и ось для графика:
+
+```{julia}
+figure = Figure(size = (600, 400));
+ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
+```
+
+Строим линии для чёрных и белых маргариток:
+
+```{julia}
+blackl = lines!(ax, agent_df[!, :time], agent_df[!, :count_black], color = :black)
+whitel = lines!(ax, agent_df[!, :time], agent_df[!, :count_white], color = :orange)
+```
+
+Добавляем легенду:
+
+```{julia}
+Legend(figure[1, 2], [blackl, whitel], ["black", "white"], labelsize = 12)
+```
+
+## Сохранение результата
+
+Сохраняем полученный график в директорию plots:
+
+```{julia}
+save(plotsdir("daisy_count.png"), figure)
+```
+
+## Заключение
+
+Мы построили график динамики численности чёрных и белых маргариток во времени. Этот график позволяет наблюдать за конкуренцией между видами и влиянием температуры на их размножение.

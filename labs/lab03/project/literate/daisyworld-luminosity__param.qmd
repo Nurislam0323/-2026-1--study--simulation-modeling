@@ -1,0 +1,147 @@
+---
+title: "Daisyworld — комплексная динамика с параметрами"
+---
+
+## Введение
+
+В этом документе мы построим комплексные графики изменения числа маргариток, температуры и солнечной светимости для различных комбинаций параметров модели.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+using CairoMakie
+include(srcdir("daisyworld.jl"))
+```
+
+## Определение функций для сбора данных
+
+Определяем функции-предикаты для разделения маргариток по видам:
+
+```{julia}
+black(a) = a.breed == :black
+white(a) = a.breed == :white
+```
+
+Настраиваем сбор данных о количестве агентов каждого вида:
+
+```{julia}
+adata = [(black, count), (white, count)]
+```
+
+## Параметры эксперимента
+
+Задаём словарь параметров для перебора. Обратите внимание, что сценарий установлен в `:ramp` для исследования реакции модели на изменение светимости:
+
+```{julia}
+param_dict = Dict(
+    :griddims => (30, 30),
+    :max_age => [25, 40],
+    :init_white => [0.2, 0.8],
+    :init_black => 0.2,
+    :albedo_white => 0.75,
+    :albedo_black => 0.25,
+    :surface_albedo => 0.4,
+    :solar_change => 0.005,
+    :solar_luminosity => 1.0,
+    :scenario => :ramp,
+    :seed => 165,
+)
+```
+
+Создаём список всех комбинаций параметров:
+
+```{julia}
+params_list = dict_list(param_dict)
+```
+
+## Цикл по параметрам
+
+Для каждой комбинации параметров выполняем симуляцию и строим комплексный график:
+
+```{julia}
+for params in params_list
+    model = daisyworld(; params...)
+```
+
+### Определение функции для температуры
+
+Определяем функцию для вычисления средней температуры по всей поверхности:
+
+```{julia}
+    temperature(model) = StatsBase.mean(model.temperature)
+```
+
+Настраиваем сбор данных о модели:
+
+```{julia}
+    mdata = [temperature, :solar_luminosity]
+```
+
+### Запуск симуляции
+
+```{julia}
+    agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
+```
+
+### Построение комплексного графика
+
+Создаём фигуру с тремя подграфиками:
+
+```{julia}
+    figure = CairoMakie.Figure(size = (600, 600));
+```
+
+**График 1: Численность маргариток**
+
+```{julia}
+    ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
+    blackl = lines!(ax1, agent_df[!, :time], agent_df[!, :count_black], color = :red)
+    whitel = lines!(ax1, agent_df[!, :time], agent_df[!, :count_white], color = :blue)
+    figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"])
+```
+
+**График 2: Температура**
+
+```{julia}
+    ax2 = figure[2, 1] = Axis(figure, ylabel = "temperature")
+```
+
+**График 3: Солнечная светимость**
+
+```{julia}
+    ax3 = figure[3, 1] = Axis(figure, xlabel = "tick", ylabel = "luminosity")
+```
+
+**Строим линии для температуры и светимости:**
+
+```{julia}
+    lines!(ax2, model_df[!, :time], model_df[!, :temperature], color = :red)
+    lines!(ax3, model_df[!, :time], model_df[!, :solar_luminosity], color = :red)
+```
+
+**Скрываем подписи по оси X для верхних графиков:**
+
+```{julia}
+    for ax in (ax1, ax2); ax.xticklabelsvisible = false; end
+```
+
+### Сохранение результата
+
+Генерируем имя файла на основе параметров и сохраняем график:
+
+```{julia}
+    plt_name = savename("daisy-luminosity", params) * ".png"
+    save(plotsdir(plt_name), figure)
+end
+```
+
+## Заключение
+
+Мы построили серию комплексных графиков для различных комбинаций параметров. Это позволяет исследовать, как параметры модели влияют на взаимосвязь между популяционной динамикой, температурой и солнечной светимостью.

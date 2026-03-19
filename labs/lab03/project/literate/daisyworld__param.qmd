@@ -1,0 +1,108 @@
+---
+title: "Daisyworld — базовая визуализация с параметрами"
+format:
+  html: default
+  jupyter: default
+jupyter: julia-1.10
+---
+
+## Введение
+
+В этом документе представлена базовая визуализация модели Daisyworld с перебором параметров. Мы исследуем, как различные значения параметров влияют на эволюцию модели.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+using CairoMakie
+include(srcdir("daisyworld.jl"))
+```
+
+## Параметры эксперимента
+
+Задаём словарь параметров для перебора. Некоторые параметры имеют единственное значение, другие — список значений для перебора:
+
+```{julia}
+param_dict = Dict(
+    :griddims => (30, 30),
+    :max_age => [25, 40],
+    :init_white => [0.2, 0.8],
+    :init_black => 0.2,
+    :albedo_white => 0.75,
+    :albedo_black => 0.25,
+    :surface_albedo => 0.4,
+    :solar_change => 0.005,
+    :solar_luminosity => 1.0,
+    :scenario => :default,
+    :seed => 165,
+)
+```
+
+Функция `dict_list` создаёт список всех комбинаций параметров:
+
+```{julia}
+params_list = dict_list(param_dict)
+```
+
+## Цикл по параметрам
+
+Для каждой комбинации параметров выполняем визуализацию:
+
+```{julia}
+for params in params_list
+    model = daisyworld(; params...)
+    daisycolor(a::Daisy) = a.breed
+    plotkwargs = (
+        agent_color=daisycolor,
+        agent_size = 20,
+        agent_marker = '✿',
+        heatarray = :temperature,
+        heatkwargs = (colorrange = (-20, 60),),
+    )
+```
+
+### Визуализация на разных шагах
+
+Начальное состояние (шаг 1):
+
+```{julia}
+    plt1, _ = abmplot(model; plotkwargs...)
+```
+
+Шаг 5:
+
+```{julia}
+    step!(model, 5)
+    plt2, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
+```
+
+Шаг 40:
+
+```{julia}
+    step!(model, 40)
+    plt3, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
+```
+
+### Сохранение результатов
+
+Генерируем имена файлов на основе параметров и сохраняем визуализации:
+
+```{julia}
+    plt1_name = savename("daisyworld", params) * "_step01" * ".png"
+    plt2_name = savename("daisyworld", params) * "_step04" * ".png"
+    plt3_name = savename("daisyworld", params) * "_step40" * ".png"
+    save(plotsdir(plt1_name), plt1)
+    save(plotsdir(plt2_name), plt2)
+    save(plotsdir(plt3_name), plt3)
+end
+```
+
+## Заключение
+
+Мы создали серию визуализаций модели Daisyworld для различных комбинаций параметров. Это позволяет исследовать чувствительность модели к изменениям начальных условий и параметров.

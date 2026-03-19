@@ -1,0 +1,113 @@
+---
+title: "Daisyworld — динамика числа маргариток с параметрами"
+---
+
+## Введение
+
+В этом документе мы построим графики изменения числа маргариток в зависимости от модельного времени для различных комбинаций параметров модели.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+using CairoMakie
+include(srcdir("daisyworld.jl"))
+```
+
+## Определение функций для подсчёта маргариток
+
+Определяем функции-предикаты для разделения маргариток по видам:
+
+```{julia}
+black(a) = a.breed == :black
+white(a) = a.breed == :white
+```
+
+Настраиваем сбор данных о количестве агентов каждого вида:
+
+```{julia}
+adata = [(black, count), (white, count)]
+```
+
+## Параметры эксперимента
+
+Задаём словарь параметров для перебора:
+
+```{julia}
+param_dict = Dict(
+    :griddims => (30, 30),
+    :max_age => [25, 40],
+    :init_white => [0.2, 0.8],
+    :init_black => 0.2,
+    :albedo_white => 0.75,
+    :albedo_black => 0.25,
+    :surface_albedo => 0.4,
+    :solar_change => 0.005,
+    :solar_luminosity => 1.0,
+    :scenario => :default,
+    :seed => 165,
+)
+```
+
+Создаём список всех комбинаций параметров:
+
+```{julia}
+params_list = dict_list(param_dict)
+```
+
+## Цикл по параметрам
+
+Для каждой комбинации параметров выполняем симуляцию и строим график:
+
+```{julia}
+for params in params_list
+    model = daisyworld(; params...)
+```
+
+### Запуск симуляции
+
+```{julia}
+    agent_df, model_df = run!(model, 1000; adata)
+```
+
+### Построение графика
+
+Создаём фигуру и ось:
+
+```{julia}
+    figure = Figure(size = (600, 400));
+    ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
+```
+
+Строим линии для чёрных и белых маргариток:
+
+```{julia}
+    blackl = lines!(ax, agent_df[!, :time], agent_df[!, :count_black], color = :black)
+    whitel = lines!(ax, agent_df[!, :time], agent_df[!, :count_white], color = :orange)
+```
+
+Добавляем легенду:
+
+```{julia}
+    Legend(figure[1, 2], [blackl, whitel], ["black", "white"], labelsize = 12)
+```
+
+### Сохранение результата
+
+Генерируем имя файла на основе параметров и сохраняем график:
+
+```{julia}
+    plt_name = savename("daisy-count", params) * ".png"
+    save(plotsdir(plt_name), figure)
+end
+```
+
+## Заключение
+
+Мы построили серию графиков динамики численности маргариток для различных комбинаций параметров. Это позволяет исследовать, как начальные условия и параметры модели влияют на популяционную динамику.

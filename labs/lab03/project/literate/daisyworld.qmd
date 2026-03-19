@@ -1,0 +1,82 @@
+---
+title: "Daisyworld — базовая визуализация"
+---
+
+## Введение
+
+В этом документе представлена базовая визуализация модели Daisyworld. Мы построим тепловую карту температуры поверхности, где маргаритки будут отображаться черно-белыми в соответствии с их видом.
+
+## Подготовка окружения
+
+Загружаем необходимые пакеты и активируем проект:
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents
+using DataFrames
+using Plots
+include(srcdir("daisyworld.jl"))
+using CairoMakie
+```
+
+## Инициализация модели
+
+Создаём модель Daisyworld с параметрами по умолчанию:
+
+```{julia}
+model = daisyworld()
+```
+
+## Настройка визуализации
+
+Определяем функцию для окраски маргариток в зависимости от их вида и настраиваем параметры отображения:
+
+```{julia}
+daisycolor(a::Daisy) = a.breed
+plotkwargs = (
+    agent_color=daisycolor, agent_size = 20, agent_marker = '✿',
+    heatarray = :temperature,
+    heatkwargs = (colorrange = (-20, 60),),
+)
+```
+
+## Визуализация на разных шагах модели
+
+### Шаг 1 (начальное состояние)
+
+```{julia}
+plt1, _ = abmplot(model; plotkwargs...)
+```
+
+### Шаг 5
+
+Продвигаем модель на 5 шагов и визуализируем:
+
+```{julia}
+step!(model, 5)
+plt2, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
+```
+
+### Шаг 40
+
+Продвигаем модель ещё на 35 шагов (итого 40) и визуализируем:
+
+```{julia}
+step!(model, 40)
+plt3, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
+```
+
+## Сохранение результатов
+
+Сохраняем полученные визуализации в директорию plots:
+
+```{julia}
+save(plotsdir("daisy_step001.png"), plt1)
+save(plotsdir("daisy_step005.png"), plt2)
+save(plotsdir("daisy_step040.png"), plt3)
+```
+
+## Заключение
+
+Мы успешно создали базовую визуализацию модели Daisyworld, которая показывает распределение температуры поверхности и расположение чёрных и белых маргариток на разных этапах эволюции модели.
