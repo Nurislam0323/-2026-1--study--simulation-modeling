@@ -1,0 +1,248 @@
+================================================================================
+                    ОПИСАНИЕ ИЗОБРАЖЕНИЙ
+                    Лабораторная работа №3: Агентное моделирование
+                    Модель Daisyworld
+================================================================================
+
+Папка image содержит 36 файлов, расположенных в ХРОНОЛОГИЧЕСКОМ ПОРЯДКЕ
+выполнения лабораторной работы.
+
+================================================================================
+
+№   Файл                              Описание
+--  --------------------------------  ----------------------------------------
+01  install_packages_julia.png        Установка пакетов Julia (StatsBase, DrWatson)
+02  install_cairomakie.png            Установка CairoMakie для визуализации
+03  initialize_drwatson_project.png   Инициализация проекта DrWatson
+04  project_structure_folders.png     Структура проекта lab03/project
+05  src_daisyworld_jl_code.png        Код модели (src/daisyworld.jl)
+06  run_daisyworld_script.png         Запуск: scripts/daisyworld.jl
+07  result_daisy_step001.png          Результат: шаг 1 (тепловая карта)
+08  result_daisy_step005.png          Результат: шаг 5 (тепловая карта)
+09  result_daisy_step040.png          Результат: шаг 40 (тепловая карта)
+10  run_daisyworld_animate.png        Запуск: scripts/daisyworld-animate.jl
+11  result_simulation.mp4             Результат: видео анимации (60 кадров)
+12  run_daisyworld_count.png          Запуск: scripts/daisyworld-count.jl
+13  result_daisy_count.png            Результат: график динамики числа
+14  run_daisyworld_luminosity.png     Запуск: scripts/daisyworld-luminosity.jl
+15  result_daisy_luminosity.png       Результат: комплексный график (3 оси)
+16  run_daisyworld_param.png          Запуск: scripts/daisyworld__param.jl
+17  result_daisyworld_param_step01.png Результат: шаг 1 (параметры: age=25, w=0.2)
+18  result_daisyworld_param_step04.png Результат: шаг 4 (параметры: age=40, w=0.8)
+19  run_daisyworld_count_param.png    Запуск: scripts/daisyworld-count__param.jl
+20  result_daisy_count_param_w0.2_age25.png  Результат: w=0.2, age=25
+21  result_daisy_count_param_w0.8_age40.png  Результат: w=0.8, age=40
+22  run_daisyworld_luminosity_param.png Запуск: scripts/daisyworld-luminosity__param.jl
+23  result_daisy_luminosity_param_w0.2_age25.png Результат: w=0.2, age=25
+24  result_daisy_luminosity_param_w0.8_age40.png Результат: w=0.8, age=40
+25  qmd_file_with_errors.png          QMD файл (спеллчекер)
+26  quarto_render_to_html.png         Рендеринг: quarto render --to html
+27  html_result_in_browser.png        HTML в браузере
+28  quarto_render_to_ipynb.png        Рендеринг: quarto render --to ipynb
+29  jupyter_notebook_in_browser.png   Jupyter Notebook в браузере
+30  nbconvert_to_script.png           Конвертация: python3 -m nbconvert
+31  converted_jl_script.png           Конвертированный JL скрипт
+32  literate_folder_qmd_files.png     Папка literate (QMD файлы)
+33  all_render_commands_list.png      Список всех команд рендеринга
+34  literate_folder_generated_files   Папка literate (сгенерированные файлы)
+35  result_daisy_count_comparison.png Сравнительный анализ: динамика численности
+36  result_daisy_luminosity_comparison.png Сравнительный анализ: комплексная динамика
+
+================================================================================
+                    ПОДРОБНОЕ ОПИСАНИЕ ПО ЭТАПАМ
+================================================================================
+
+                    ЭТАП 1: ПОДГОТОВКА ОКРУЖЕНИЯ (01-03)
+================================================================================
+
+01_install_packages_julia.png
+------------------------------
+Скриншот терминала Julia REPL. Установка пакетов StatsBase и DrWatson.
+
+02_install_cairomakie.png
+------------------------------
+Скриншот терминала Julia REPL. Установка пакета CairoMakie для визуализации.
+
+03_initialize_drwatson_project.png
+------------------------------
+Скриншот терминала. Инициализация проекта DrWatson через initialize_project(".").
+
+                    ЭТАП 2: СОЗДАНИЕ КОДА МОДЕЛИ (04-05)
+================================================================================
+
+04_project_structure_folders.png
+------------------------------
+Скриншот файлового менеджера. Структура проекта lab03/project с папками:
+data, notebooks, papers, plots, _research, scripts, src, test.
+
+05_src_daisyworld_jl_code.png
+------------------------------
+Скриншот редактора кода. Файл src/daisyworld.jl с определением агента Daisy.
+
+                ЭТАП 3: БАЗОВАЯ ВИЗУАЛИЗАЦИЯ (06-09)
+                    Скрипт: scripts/daisyworld.jl
+================================================================================
+
+06_run_daisyworld_script.png
+------------------------------
+Скриншот терминала. Запуск:
+$ julia --project=@. scripts/daisyworld.jl
+
+07_result_daisy_step001.png
+------------------------------
+Результат: начальное состояние модели (шаг 1).
+Тепловая карта с равномерным распределением маргариток.
+
+08_result_daisy_step005.png
+------------------------------
+Результат: состояние модели после 5 шагов.
+
+09_result_daisy_step040.png
+------------------------------
+Результат: состояние модели после 40 шагов.
+
+                ЭТАП 4: АНИМАЦИЯ МОДЕЛИ (10-11)
+                    Скрипт: scripts/daisyworld-animate.jl
+================================================================================
+
+10_run_daisyworld_animate.png
+------------------------------
+Скриншот терминала. Запуск:
+$ julia --project=@. scripts/daisyworld-animate.jl
+
+11_result_simulation.mp4
+------------------------------
+Результат: видеофайл анимации на 60 кадров.
+
+            ЭТАП 5: ДИНАМИКА ЧИСЛА (12-13)
+                Скрипт: scripts/daisyworld-count.jl
+================================================================================
+
+12_run_daisyworld_count.png
+------------------------------
+Скриншот терминала. Запуск:
+$ julia --project=@. scripts/daisyworld-count.jl
+
+13_result_daisy_count.png
+------------------------------
+Результат: график динамики численности (1000 шагов).
+Чёрная линия — чёрные маргаритки, оранжевая — белые.
+
+            ЭТАП 6: КОМПЛЕКСНАЯ ДИНАМИКА (14-15)
+                Скрипт: scripts/daisyworld-luminosity.jl
+================================================================================
+
+14_run_daisyworld_luminosity.png
+------------------------------
+Скриншот терминала. Запуск (сценарий ramp):
+$ julia --project=@. scripts/daisyworld-luminosity.jl
+
+15_result_daisy_luminosity.png
+------------------------------
+Результат: комплексный график (3 подграфика):
+1) Численность маргариток
+2) Температура поверхности
+3) Солнечная светимость (сценарий ramp)
+
+            ЭТАП 7: ВИЗУАЛИЗАЦИЯ С ПАРАМЕТРАМИ (16-18)
+                Скрипт: scripts/daisyworld__param.jl
+================================================================================
+
+16_run_daisyworld_param.png
+------------------------------
+Скриншот терминала. Запуск с перебором параметров:
+$ julia --project=@. scripts/daisyworld__param.jl
+
+17_result_daisyworld_param_step01.png
+-------------------------------------
+Результат для параметров: max_age=25, init_white=0.2 (шаг 1)
+
+18_result_daisyworld_param_step04.png
+-------------------------------------
+Результат для параметров: max_age=40, init_white=0.8 (шаг 4)
+
+            ЭТАП 8: ДИНАМИКА С ПАРАМЕТРАМИ (19-21)
+                Скрипт: scripts/daisyworld-count__param.jl
+================================================================================
+
+19_run_daisyworld_count_param.png
+------------------------------
+Скриншот терминала. Запуск:
+$ julia --project=@. scripts/daisyworld-count__param.jl
+
+20_result_daisy_count_param_w0.2_age25.png
+------------------------------------------
+Результат: max_age=25, init_white=0.2
+
+21_result_daisy_count_param_w0.8_age40.png
+------------------------------------------
+Результат: max_age=40, init_white=0.8
+
+        ЭТАП 9: КОМПЛЕКСНАЯ С ПАРАМЕТРАМИ (22-24)
+            Скрипт: scripts/daisyworld-luminosity__param.jl
+================================================================================
+
+22_run_daisyworld_luminosity_param.png
+--------------------------------------
+Скриншот терминала. Запуск (сценарий ramp):
+$ julia --project=@. scripts/daisyworld-luminosity__param.jl
+
+23_result_daisy_luminosity_param_w0.2_age25.png
+-----------------------------------------------
+Результат: max_age=25, init_white=0.2
+
+24_result_daisy_luminosity_param_w0.8_age40.png
+-----------------------------------------------
+Результат: max_age=40, init_white=0.8
+
+                ЭТАП 10: QUARTO ДОКУМЕНТЫ (25-34)
+================================================================================
+
+25_qmd_file_with_errors.png         QMD файл с красными подчёркиваниями (спеллчекер)
+26_quarto_render_to_html.png        Рендеринг: quarto render --to html
+27_html_result_in_browser.png       HTML результат в браузере
+28_quarto_render_to_ipynb.png       Рендеринг: quarto render --to ipynb
+29_jupyter_notebook_in_browser.png  Jupyter Notebook в браузере
+30_nbconvert_to_script.png          Конвертация: python3 -m nbconvert --to script
+31_converted_jl_script.png          Конвертированный JL скрипт
+32_literate_folder_qmd_files.png    Папка literate со всеми QMD файлами
+33_all_render_commands_list.png     Список всех команд для рендеринга
+34_literate_folder_generated_files  Папка literate со сгенерированными файлами
+
+            ЭТАП 11: СРАВНИТЕЛЬНЫЙ АНАЛИЗ (35-36)
+                Скрипты: literate/*_comparison.qmd
+================================================================================
+
+35_result_daisy_count_comparison.png
+------------------------------------
+Результат literate/daisyworld-count__comparison.qmd:
+Сравнительный график динамики численности для 4 комбинаций параметров
+(max_age × init_white) на одних осях. Все кривые на одном графике.
+
+36_result_daisy_luminosity_comparison.png
+-----------------------------------------
+Результат literate/daisyworld-luminosity__comparison.qmd:
+Комплексный сравнительный график для 4 комбинаций параметров.
+Три подграфика: численность, температура, светимость.
+
+================================================================================
+                    ИТОГО: 36 файлов
+================================================================================
+
+Хронология выполнения:
+1.  Установка пакетов (01-03)
+2.  Создание кода модели (04-05)
+3.  Базовая визуализация: daisyworld.jl → 3 файла (06-09)
+4.  Анимация: daisyworld-animate.jl → video (10-11)
+5.  Динамика числа: daisyworld-count.jl → 1 файл (12-13)
+6.  Комплексная: daisyworld-luminosity.jl → 1 файл (14-15)
+7.  С параметрами: daisyworld__param.jl → 2 файла (16-18)
+8.  Динамика с параметрами: daisyworld-count__param.jl → 2 файла (19-21)
+9.  Комплексная с параметрами: daisyworld-luminosity__param.jl → 2 файла (22-24)
+10. Quarto документы (25-34)
+11. Сравнительный анализ: comparison.qmd → 2 файла (35-36)
+
+ПРИМЕЧАНИЕ: Последние два файла (35-36) представляют краткий анализ
+результатов сравнительного анализа для различных параметров.
+
+================================================================================

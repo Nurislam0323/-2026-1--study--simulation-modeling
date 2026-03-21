@@ -1,0 +1,436 @@
+---
+## Author
+author:
+  name: Закиров Нурислам Дамирович
+  degrees: студент
+  email: 1132236040@rudn.ru
+  affiliation:
+    - name: Российский университет дружбы народов
+      country: Российская Федерация
+      postal-code: 117198
+      city: Москва
+      address: ул. Миклухо-Маклая, д. 6
+## Title
+title: Лабораторная работа №3
+subtitle: Агентное моделирование. Модель Daisyworld
+license: CC BY
+date: today
+date-format: "YYYY-MM-DD"
+---
+
+# Информация
+
+## Докладчик
+
+:::::::::::::: {.columns align=center}
+::: {.column width="70%"}
+
+  * Закиров Нурислам Дамирович
+  * студент группы НФИбд-01-23
+  * Российский университет дружбы народов
+  * [1132236040@rudn.ru](mailto:1132236040@rudn.ru)
+
+:::
+::: {.column width="30%"}
+
+![](./image/zakirov.jpg)
+
+:::
+::::::::::::::
+
+:::
+::::::::::::::
+
+# Вводная часть
+
+## Цель работы
+
+Освоить методологию **агентного моделирования** (Agent-Based Modeling) на примере классической модели **Daisyworld**:
+
+- реализовать модель **Daisyworld** на языке Julia с использованием **Agents.jl**;
+- изучить механизм **саморегуляции экосистемы**;
+- преобразовать рабочие скрипты в **литературный стиль** с использованием **Quarto**;
+- сгенерировать производные форматы и интегрировать документацию в отчёт.
+
+## Задачи
+
+- Создать проект DrWatson `lab03` с необходимыми зависимостями
+- Выполнить предложенный код модели Daisyworld
+- Создать скрипты визуализации (базовая, анимация, динамика, комплексная)
+- Преобразовать код в литературный стиль
+- Сгенерировать производные форматы: `.jl`, `.ipynb`, `.html`
+- Выполнить Jupyter notebooks
+- Добавить **сравнительный анализ** для различных комбинаций параметров
+- Интегрировать Quarto-документацию в отчёт
+
+## Агентное моделирование
+
+:::::::::::::: {.columns}
+::: {.column width="50%"}
+
+**Ключевые компоненты:**
+
+- **Агенты** — автономные сущности со свойствами и правилами
+- **Среда** — пространство существования (сетка, непрерывное)
+- **Взаимодействия** — локальные, глобальные, через среду
+
+**Принципы:**
+
+- Эмерджентность
+- Автономия
+- Гетерогенность
+- Локальность
+
+:::
+::: {.column width="50%"}
+
+**Пакет Agents.jl:**
+
+```julia
+@agent struct Daisy(GridAgent{2})
+    breed::Symbol
+    age::Int
+    albedo::Float64
+end
+```
+
+Модель на клеточной сетке 30×30
+
+:::
+::::::::::::::
+
+# Теоретическое введение
+
+## Модель Daisyworld --- описание
+
+:::::::::::::: {.columns}
+::: {.column width="50%"}
+
+**Два вида маргариток:**
+
+| Вид | Альбедо | Эффект |
+|-----|---------|--------|
+| Чёрные | 0.25 | Нагревают |
+| Белые | 0.75 | Охлаждают |
+
+**Механизм саморегуляции:**
+
+- Холодно → размножаются чёрные
+- Тепло → размножаются белые
+
+:::
+::: {.column width="50%"}
+
+![](image/07_result_daisy_step001.png)
+
+Начальное состояние (шаг 1)
+
+:::
+::::::::::::::
+
+## Модель Daisyworld --- уравнения
+
+$$L_{\text{abs}} = (1 - \alpha) \cdot L$$
+
+$$T_{\text{local}} = 72 \cdot \ln(L_{\text{abs}}) + 80$$
+
+$$P_{\text{seed}} = 0.1457 \cdot T - 0.0032 \cdot T^2 - 0.6443$$
+
+| Параметр | Значение | Смысл |
+|----------|----------|-------|
+| `griddims` | (30, 30) | размер сетки |
+| `max_age` | 25 | максимальный возраст |
+| `init_white` | 0.2 | начальная доля белых |
+| `albedo_white` | 0.75 | альбедо белых |
+| `albedo_black` | 0.25 | альбедо чёрных |
+| `solar_luminosity` | 1.0 | светимость |
+
+# Выполнение лабораторной работы
+
+## Инициализация проекта DrWatson
+
+![](image/03_initialize_drwatson_project.png)
+
+`initialize_project(".")` --- создание структуры проекта
+
+## Структура проекта
+
+![](image/04_project_structure_folders.png)
+
+- `scripts/` — исполняемые скрипты
+- `src/` — базовый код модели
+- `literate/` — Quarto документы
+- `plots/` — результаты визуализации
+
+## Код модели Daisyworld
+
+![](image/05_src_daisyworld_jl_code.png)
+
+```julia
+function update_surface_temperature!(pos, model)
+    absorbed_luminosity = if isempty(pos, model)
+        (1 - model.surface_albedo) * model.solar_luminosity
+    else
+        (1 - daisy.albedo) * model.solar_luminosity
+    end
+    local_heating = 72 * log(absorbed_luminosity) + 80
+    model.temperature[pos...] = 
+        (model.temperature[pos...] + local_heating) / 2
+end
+```
+
+## Базовая визуализация
+
+![](image/06_run_daisyworld_script.png)
+
+`julia --project=@. scripts/daisyworld.jl`
+
+## Результаты базовой визуализации
+
+:::::::::::::: {.columns}
+::: {.column width="33%"}
+
+![](image/07_result_daisy_step001.png)
+
+Шаг 1
+
+:::
+::: {.column width="33%"}
+
+![](image/08_result_daisy_step005.png)
+
+Шаг 5
+
+:::
+::: {.column width="33%"}
+
+![](image/09_result_daisy_step040.png)
+
+Шаг 40
+
+:::
+::::::::::::::
+
+Группировка маргариток в зонах с оптимальной температурой
+
+## Анимация модели
+
+![](image/10_run_daisyworld_animate.png)
+
+`julia --project=@. scripts/daisyworld-animate.jl`
+
+Результат: `simulation.mp4` (60 кадров)
+
+## Динамика числа маргариток
+
+![](image/12_run_daisyworld_count.png)
+
+`julia --project=@. scripts/daisyworld-count.jl`
+
+![](image/13_result_daisy_count.png)
+
+Колебания популяций чёрных и белых маргариток (1000 шагов)
+
+## Комплексная динамика
+
+![](image/14_run_daisyworld_luminosity.png)
+
+`julia --project=@. scripts/daisyworld-luminosity.jl`
+
+![](image/15_result_daisy_luminosity.png)
+
+Три подграфика: численность, температура, светимость (сценарий `:ramp`)
+
+## Визуализация с параметрами
+
+![](image/16_run_daisyworld_param.png)
+
+`julia --project=@. scripts/daisyworld__param.jl`
+
+Вариация: `max_age ∈ {25, 40}`, `init_white ∈ {0.2, 0.8}`
+
+## Результаты с параметрами
+
+:::::::::::::: {.columns}
+::: {.column width="50%"}
+
+![](image/17_result_daisyworld_param_step01.png)
+
+`max_age=25, init_white=0.2` (шаг 1)
+
+:::
+::: {.column width="50%"}
+
+![](image/18_result_daisyworld_param_step04.png)
+
+`max_age=40, init_white=0.8` (шаг 4)
+
+:::
+::::::::::::::
+
+## Динамика с параметрами
+
+![](image/19_run_daisyworld_count_param.png)
+
+`julia --project=@. scripts/daisyworld-count__param.jl`
+
+:::::::::::::: {.columns}
+::: {.column width="50%"}
+
+![](image/20_result_daisy_count_param_w0.2_age25.png)
+
+`max_age=25, init_white=0.2`
+
+:::
+::: {.column width="50%"}
+
+![](image/21_result_daisy_count_param_w0.8_age40.png)
+
+`max_age=40, init_white=0.8`
+
+:::
+::::::::::::::
+
+## Комплексная динамика с параметрами
+
+![](image/22_run_daisyworld_luminosity_param.png)
+
+`julia --project=@. scripts/daisyworld-luminosity__param.jl`
+
+:::::::::::::: {.columns}
+::: {.column width="50%"}
+
+![](image/23_result_daisy_luminosity_param_w0.2_age25.png)
+
+`max_age=25, init_white=0.2`
+
+:::
+::: {.column width="50%"}
+
+![](image/24_result_daisy_luminosity_param_w0.8_age40.png)
+
+`max_age=40, init_white=0.8`
+
+:::
+::::::::::::::
+
+## Литературное программирование
+
+![](image/25_qmd_file_with_errors.png)
+
+Создание QMD файлов с разделением кода и комментариев
+
+## Рендеринг в HTML
+
+![](image/26_quarto_render_to_html.png)
+
+`quarto render literate/daisyworld.qmd --to html`
+
+![](image/27_html_result_in_browser.png)
+
+HTML документация в браузере
+
+## Рендеринг в Jupyter
+
+![](image/28_quarto_render_to_ipynb.png)
+
+`quarto render literate/daisyworld.qmd --to ipynb`
+
+![](image/29_jupyter_notebook_in_browser.png)
+
+Jupyter Notebook в браузере
+
+## Конвертация в чистый код
+
+![](image/30_nbconvert_to_script.png)
+
+`python3 -m nbconvert --to script daisyworld.ipynb`
+
+![](image/31_converted_jl_script.png)
+
+Конвертированный JL скрипт
+
+## Структура literate
+
+![](image/32_literate_folder_qmd_files.png)
+
+8 QMD файлов для всех скриптов
+
+![](image/33_all_render_commands_list.png)
+
+Список всех команд рендеринга
+
+![](image/34_literate_folder_generated_files.png)
+
+Сгенерированные файлы (HTML, IPYNB, JL)
+
+# Сравнительный анализ
+
+## Динамика численности: 4 комбинации параметров
+
+![](image/35_result_daisy_count_comparison.png)
+
+**Выводы:**
+
+- `max_age=40` → стабильная популяция
+- `init_white=0.8` → доминирование белых
+- Система устойчива к вариациям параметров
+
+## Комплексная динамика: 4 комбинации
+
+![](image/36_result_daisy_luminosity_comparison.png)
+
+**Результаты:**
+
+- Все комбинации сходятся к стабильному состоянию
+- Температура регулируется в диапазоне 5–30°C
+- Модель подтверждает гипотезу Геи
+
+# Результаты
+
+## Ключевые результаты
+
+**Базовая визуализация:**
+
+- 3 тепловых карты (шаги 1, 5, 40)
+- Группировка маргариток в оптимальных зонах
+
+**Анимация:**
+
+- 60 кадров эволюции модели
+- Динамическая саморегуляция
+
+**Динамика числа:**
+
+- Колебания популяций (1000 шагов)
+- Противофазные колебания чёрных и белых
+
+**Комплексная динамика:**
+
+- Температура: 5–30°C
+- Сценарий `:ramp`: светимость 1.0 → 1.9 → 1.4
+
+**Сравнительный анализ:**
+
+- 4 комбинации параметров
+- Устойчивость к вариациям `max_age` и `init_white`
+
+## Выводы
+
+- Изучены основы **агентного моделирования** на примере Daisyworld
+- Реализована модель с **механизмом саморегуляции** температуры
+- Созданы **7 скриптов визуализации** (базовая, анимация, динамика, комплексная, с параметрами)
+- Освоено **литературное программирование** (QMD → HTML, IPYNB, JL)
+- Выполнен **сравнительный анализ** для 4 комбинаций параметров
+- Все материалы размещены на **GitHub** и **GitLab** (релиз v1.0.0)
+- Записаны **скринкасты** (YouTube, RuTube, VK Video)
+
+## Научная ценность
+
+**Модель Daisyworld** наглядно демонстрирует:
+
+- Принципы **гипотезы Геи** — планета как единая саморегулирующаяся система
+- Механизм **отрицательной обратной связи** через альбедо маргариток
+- **Устойчивость (robustness)** к вариациям биологических параметров
+
+Несмотря на простоту, модель воспроизводит поддержание температуры в благоприятном диапазоне за счёт взаимодействия двух видов.
