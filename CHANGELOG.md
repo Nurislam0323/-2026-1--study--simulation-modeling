@@ -117,7 +117,3 @@
 
 ---
 
-## Ссылки
-
-- [1.3.0]: https://github.com/nurislam-zakirov/mathmod-lab03/releases/tag/v1.3.0
-- [1.0.0]: https://github.com/nurislam-zakirov/mathmod-lab03/releases/tag/v1.0.0
