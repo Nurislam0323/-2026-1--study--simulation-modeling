@@ -1,0 +1,210 @@
+---
+## Author
+author:
+  name: Закиров Нурислам Дамирович
+  email: 1132236040@rudn.ru
+  affiliation: РУДН
+## Title
+title: "Лабораторная работа №4"
+subtitle: "Исследование эффекта миграции в модели SIR"
+---
+
+# Введение
+
+В данной работе исследуется влияние интенсивности перемещения людей между городами
+на скорость распространения эпидемии.
+
+## Цель исследования
+
+Изучить, как интенсивность миграции влияет на:
+
+1. **Время достижения пика** эпидемии
+2. **Масштаб пика** заболеваемости
+
+## Методология
+
+- Интенсивность миграции: от 0 до 0.5 с шагом 0.1
+- Для каждого значения — 3 прогона с разными seed (42, 43, 44)
+- Инфекция начинается только в одном городе
+
+# Инициализация проекта
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+using Agents, DataFrames, Plots, CSV, Random
+include(srcdir("sir_model.jl"))
+```
+
+# Функция создания матрицы миграции
+
+```{julia}
+# Функция для создания матрицы миграции с заданной интенсивностью
+function create_migration_matrix(C, intensity)
+    M = ones(C, C) .* intensity ./ (C-1)
+    for i = 1:C
+        M[i, i] = 1 - intensity
+    end
+    return M
+end
+```
+
+# Функция измерения времени пика
+
+```{julia}
+# Функция для измерения времени достижения пика
+function peak_time(p)
+    # Создаём матрицу миграции на основе интенсивности
+    migration_rates = create_migration_matrix(p[:C], p[:migration_intensity])
+
+    model = initialize_sir(;
+        Ns = p[:Ns],
+        β_und = p[:β_und],
+        β_det = p[:β_det],
+        infection_period = p[:infection_period],
+        detection_time = p[:detection_time],
+        death_rate = p[:death_rate],
+        reinfection_probability = p[:reinfection_probability],
+        Is = p[:Is],
+        seed = p[:seed],
+        migration_rates = migration_rates,
+    )
+
+    infected_frac(model) = count(a.status == :I for a in allagents(model)) / nagents(model)
+    peak = 0.0
+    peak_step = 0
+
+    for step = 1:p[:n_steps]
+        # Ручной шаг
+        agent_ids = collect(allids(model))
+        for id in agent_ids
+            agent = try
+                model[id]
+            catch
+                nothing
+            end
+            if agent !== nothing
+                sir_agent_step!(agent, model)
+            end
+        end
+        frac = infected_frac(model)
+        if frac > peak
+            peak = frac
+            peak_step = step
+        end
+    end
+
+    return (peak_time = peak_step, peak_value = peak)
+end
+```
+
+# Параметры сканирования
+
+```{julia}
+# Сканирование интенсивности миграции
+migration_intensities = 0.0:0.1:0.5
+seeds = [42, 43, 44]
+
+params_list = []
+for mig in migration_intensities
+    for s in seeds
+        push!(
+            params_list,
+            Dict(
+                :migration_intensity => mig,
+                :C => 3,
+                :Ns => [1000, 1000, 1000],
+                :β_und => [0.5, 0.5, 0.5],
+                :β_det => [0.05, 0.05, 0.05],
+                :infection_period => 14,
+                :detection_time => 7,
+                :death_rate => 0.02,
+                :reinfection_probability => 0.1,
+                :Is => [1, 0, 0],
+                :seed => s,
+                :n_steps => 150,
+            ),
+        )
+    end
+end
+```
+
+# Запуск экспериментов
+
+```{julia}
+# Запуск
+results = []
+for params in params_list
+    data = peak_time(params)
+    push!(results, merge(params, Dict(pairs(data))))
+    println(
+        "Завершён эксперимент с migration_intensity = $(params[:migration_intensity]), seed = $(params[:seed])",
+    )
+end
+
+# Сохраняем все прогоны
+df = DataFrame(results)
+CSV.write(datadir("migration_scan_all.csv"), df)
+```
+
+# Анализ результатов
+
+```{julia}
+# Усреднение по повторам
+using Statistics
+grouped = combine(
+    groupby(df, [:migration_intensity]),
+    :peak_time => mean => :mean_peak_time,
+    :peak_value => mean => :mean_peak_value,
+)
+```
+
+# Визуализация
+
+```{julia}
+# Визуализация
+plot(
+    grouped.migration_intensity,
+    grouped.mean_peak_time,
+    marker = :circle,
+    xlabel = "Интенсивность миграции",
+    ylabel = "Время до пика (дни)",
+    label = "Время пика",
+)
+plot!(
+    grouped.migration_intensity,
+    grouped.mean_peak_value .* 3000,
+    marker = :square,
+    xlabel = "Интенсивность миграции",
+    ylabel = "Численность в пике",
+    label = "Пиковая заболеваемость",
+)
+savefig(plotsdir("migration_effect.png"))
+```
+
+# Результаты
+
+График демонстрирует, как ускорение обмена людьми между городами приводит к:
+
+1. **Более раннему пику** эпидемии
+2. **Более высокому пику** заболеваемости
+
+## Практическое значение
+
+Результаты показывают важность ограничения мобильности населения во время эпидемии:
+
+- Карантинные меры эффективны для замедления распространения
+- Изоляция городов позволяет выиграть время для подготовки системы здравоохранения
+
+# Выводы
+
+Исследование эффекта миграции показало:
+
+1. Интенсивность миграции напрямую влияет на скорость распространения
+2. Ограничение перемещений — эффективная мера контроля эпидемии
+3. Результаты согласуются с реальными данными по пандемиям
+
+# Литература
+
+1. Hethcote H. W. The Mathematics of Infectious Diseases. — 2000.
+2. Agents.jl: Agent-Based Modeling in Julia. — 2024.
