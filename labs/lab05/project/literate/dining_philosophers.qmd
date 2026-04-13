@@ -1,0 +1,92 @@
+---
+## Author
+author:
+  name: Закиров Нурислам Дамирович
+  email: 1132236040@rudn.ru
+  affiliation: РУДН
+## Title
+title: "Лабораторная работа №5"
+subtitle: "Аппарат сетей Петри. Обедающие философы"
+## Abstract
+abstract: |
+  В данной работе реализуется задача "Обедающие философы" с использованием аппарата
+  сетей Петри на языке Julia. Исследуются два варианта: классическая модель (без арбитра)
+  и модифицированная модель с арбитром для предотвращения deadlock.
+---
+
+# Введение
+
+Сети Петри — это математический аппарат для моделирования параллельных, асинхронных
+и распределённых систем. В основе лежат четыре элемента: позиции, переходы, дуги и фишки.
+
+## Задача "Обедающие философы"
+
+Классическая задача синхронизации, предложенная Дейкстрой в 1971 году:
+
+- Пять философов сидят за круглым столом
+- Между каждыми двумя философами — одна вилка
+- Философ может думать, голодать или есть
+- Для еды нужны обе вилки (левая и правая)
+- **Проблема:** при наивной реализации возникает взаимная блокировка (deadlock)
+
+# Инициализация проекта и загрузка пакетов
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+include(srcdir("DiningPhilosophers.jl"))
+using .DiningPhilosophers
+using DataFrames, CSV, Plots
+```
+
+# Базовое моделирование
+
+## Классическая сеть (без арбитра)
+
+```{julia}
+N = 5
+tmax = 50.0
+
+println("=== Классическая сеть (без арбитра) ===")
+net_classic, u0_classic, _ = build_classical_network(N)
+
+df_classic = simulate_stochastic(net_classic, u0_classic, tmax)
+CSV.write(datadir("dining_classic.csv"), df_classic)
+
+dead = detect_deadlock(df_classic, net_classic)
+println("Deadlock обнаружен: $dead")
+
+plot_classic = plot_marking_evolution(df_classic, N)
+savefig(plotsdir("classic_simulation.png"))
+```
+
+## Сеть с арбитром
+
+```{julia}
+println("\n=== Сеть с арбитром ===")
+net_arb, u0_arb, _ = build_arbiter_network(N)
+
+df_arb = simulate_stochastic(net_arb, u0_arb, tmax)
+CSV.write(datadir("dining_arbiter.csv"), df_arb)
+
+dead_arb = detect_deadlock(df_arb, net_arb)
+println("Deadlock обнаружен: $dead_arb")
+
+plot_arb = plot_marking_evolution(df_arb, N)
+savefig(plotsdir("arbiter_simulation.png"))
+```
+
+# Выводы
+
+В ходе выполнения лабораторной работы:
+
+1. Построена сеть Петри для пяти философов
+2. Обнаружен deadlock в классической модели
+3. Сеть с арбитром предотвращает deadlock
+4. Проведено стохастическое моделирование (алгоритм Гиллеспи)
+
+# Литература
+
+1. Dijkstra E. W. Hierarchical ordering of sequential processes. — 1971.
+2. Peterson J. L. Petri Net Theory and the Modeling of Systems. — 1981.
+3. Murata T. Petri nets: Properties, analysis and applications. — 1989.
