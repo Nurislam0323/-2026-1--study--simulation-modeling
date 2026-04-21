@@ -1,0 +1,81 @@
+---
+author:
+  name: Закиров Нурислам Дамирович
+  email: 1132236040@rudn.ru
+  affiliation: РУДН
+title: "Лабораторная работа №6"
+subtitle: "Базовый прогон модели SIR в подходе сетей Петри"
+format:
+  html:
+    toc: true
+    code-fold: false
+---
+
+# Введение
+
+В этом документе выполняется базовый прогон модели SIR, заданной как сеть Петри. Переход `infection` переводит систему по правилу `S + I -> I + I`, а переход `recovery` описывает выздоровление `I -> R`.
+
+# Загрузка проекта
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+
+using Random
+using DataFrames, CSV, Plots
+
+include(srcdir("SIRPetri.jl"))
+using .SIRPetri
+```
+
+# Параметры
+
+```{julia}
+β = 0.3
+γ = 0.1
+tmax = 100.0
+
+R0 = reproduction_number(β, γ)
+println("R0 = ", R0)
+```
+
+# Построение сети
+
+```{julia}
+net, u0, states = build_sir_network(β, γ)
+println(Dict(zip(states, u0)))
+```
+
+# Детерминированная симуляция
+
+```{julia}
+df_det = simulate_deterministic(net, u0, (0.0, tmax); saveat = 0.5, rates = [β, γ])
+CSV.write(datadir("sir_det.csv"), df_det)
+
+p_det = plot_sir(df_det; title = "Deterministic SIR Petri net")
+savefig(p_det, plotsdir("sir_det_dynamics.png"))
+p_det
+```
+
+# Стохастическая симуляция
+
+```{julia}
+Random.seed!(123)
+df_stoch = simulate_stochastic(net, u0, (0.0, tmax); rates = [β, γ])
+CSV.write(datadir("sir_stoch.csv"), df_stoch)
+
+p_stoch = plot_sir(df_stoch; title = "Stochastic SIR Petri net")
+savefig(p_stoch, plotsdir("sir_stoch_dynamics.png"))
+p_stoch
+```
+
+# Сравнение
+
+```{julia}
+println("Детерминированный пик I: ", maximum(df_det.I))
+println("Стохастический пик I: ", maximum(df_stoch.I))
+```
+
+# Вывод
+
+Детерминированная траектория показывает усреднённую динамику эпидемии, а стохастическая траектория демонстрирует влияние случайности. При большой популяции обе траектории близки по форме, но могут отличаться временем и высотой пика.

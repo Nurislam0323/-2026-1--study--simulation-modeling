@@ -1,0 +1,77 @@
+---
+author:
+  name: Закиров Нурислам Дамирович
+  email: 1132236040@rudn.ru
+  affiliation: РУДН
+title: "Лабораторная работа №6"
+subtitle: "Параметрический анализ SIR-сети Петри"
+format:
+  html:
+    toc: true
+    code-fold: false
+---
+
+# Цель
+
+Исследовать чувствительность модели SIR к коэффициенту заражения `β` при фиксированном коэффициенте выздоровления `γ = 0.1`.
+
+# Загрузка проекта
+
+```{julia}
+using DrWatson
+@quickactivate "project"
+
+using DataFrames, CSV, Plots
+
+include(srcdir("SIRPetri.jl"))
+using .SIRPetri
+```
+
+# Сканирование β
+
+```{julia}
+β_range = 0.1:0.05:0.8
+γ_fixed = 0.1
+tmax = 100.0
+
+results = NamedTuple[]
+
+for β in β_range
+    net, u0, _ = build_sir_network(β, γ_fixed)
+    df = simulate_deterministic(
+        net,
+        u0,
+        (0.0, tmax);
+        saveat = 0.5,
+        rates = [β, γ_fixed],
+    )
+
+    push!(
+        results,
+        (
+            β = β,
+            R0 = reproduction_number(β, γ_fixed),
+            peak_I = maximum(df.I),
+            peak_time = df.time[argmax(df.I)],
+            final_R = df.R[end],
+            attack_rate = df.R[end] / sum(u0),
+        ),
+    )
+end
+
+df_scan = DataFrame(results)
+CSV.write(datadir("sir_scan.csv"), df_scan)
+df_scan
+```
+
+# Визуализация
+
+```{julia}
+p = plot_scan(df_scan)
+savefig(p, plotsdir("sir_scan.png"))
+p
+```
+
+# Вывод
+
+С ростом `β` увеличивается базовое репродуктивное число `R0 = β/γ`, а вместе с ним растут пик инфицированных и итоговая доля переболевших. Это показывает пороговый характер эпидемического процесса.
