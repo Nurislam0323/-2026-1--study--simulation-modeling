@@ -1,9 +1,35 @@
 # Changelog
 
-Все существенные изменения в проекте математического моделирования будут задокументированы в этом файле.
+Все заметные изменения проекта документируются в этом файле.
 
-Формат следует рекомендациям [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
-проект использует [Семантическое версионирование](https://semver.org/lang/ru/).
+Формат основан на Keep a Changelog, версии оформляются под выпуск лабораторной работы.
+
+## [v1.6.0] - 2026-04-21
+
+### Added
+
+- Реализован модуль `src/SIRPetri.jl` для SIR-модели в подходе сетей Петри.
+- Добавлены сценарии `scripts/sirpetri_run.jl`, `scripts/sirpetri_scan_parameters.jl`, `scripts/sirpetri_animate.jl` и `scripts/sirpetri_report.jl`.
+- Получены данные `data/sir_det.csv`, `data/sir_stoch.csv` и `data/sir_scan.csv`.
+- Получены графики `sir_det_dynamics.png`, `sir_stoch_dynamics.png`, `sir_scan.png`, `comparison.png`, `sensitivity.png` и GIF-анимация `sir_animation.gif`.
+- Подготовлена папка `image` с хронологической последовательностью скриншотов и графиков для отчета.
+- Подготовлен отчет `report/mathmod-lab06-report-Закиров.qmd`.
+- Подготовлена презентация `presentation/mathmod-lab06-presentation-Закиров.qmd`.
+- Подготовлен текст выступления `presentation/выступление.txt`.
+- Добавлены `bibliography.bib`, `test_install.jl` и тесты `test/runtests.jl`.
+
+### Changed
+
+- Обновлен `Project.toml`: добавлены зависимости, реально используемые моделью и сценариями.
+- Обновлен `README.md`: добавлены команды запуска на Ubuntu и список ожидаемых результатов.
+
+### Results
+
+- Для базовых параметров `beta = 0.3`, `gamma = 0.1` получено `R0 = 3.0`.
+- Детерминированный пик инфицированных составил около `303`.
+- Стохастический пик инфицированных составил около `282`.
+- Сканирование `beta` от `0.1` до `0.8` показало рост пика инфицированных до `616.19`.
+
 
 ---
 
