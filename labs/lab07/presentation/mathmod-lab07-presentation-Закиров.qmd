@@ -12,25 +12,14 @@ author:
       address: ул. Миклухо-Маклая, д. 6
 
 ## Title
-title: "Лабораторная работа №7"
-subtitle: "Дискретно-событийное моделирование"
+title: Лабораторная работа №7
+subtitle: Дискретно-событийное моделирование
 license: CC BY
 date: today
 date-format: "YYYY-MM-DD"
-lang: ru
-format:
-  revealjs:
-    theme: simple
-    slide-number: true
-    transition: fade
-    incremental: false
-    chalkboard: true
-    preview-links: auto
-execute:
-  echo: false
-  warning: false
-  message: false
 ---
+
+
 
 # Информация
 
@@ -46,6 +35,8 @@ execute:
 
 :::
 ::: {.column width="30%"}
+
+![](/image/zakirov.jpg)
 
 :::
 ::::::::::::::
@@ -262,13 +253,13 @@ julia --project=. scripts/des_report.jl
 
 ![](image/16_render_ross_notebook.png){width=48%}
 
-## Шаг 15. HTML и скрипты
+## Шаг 15. Готовые производные файлы
 
-Проверены HTML-результаты и конвертация notebook в чистый Julia-скрипт.
+Мы успешно отрендерили все файлы формата qmd и получили по 3 производных формата.
 
-![](image/17_html_ross_report_start.png){width=45%}
+![](image/23_final_literate_outputs.png){width=35%}
 
-![](image/20_nbconvert_ross_script.png){width=45%}
+
 
 # Выводы
 
